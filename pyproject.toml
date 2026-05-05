@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "urbanhub-correlation"
+version = "0.1.0"
+description = "Moteur de corrélation Trafic/NO2 — UrbanHub"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 100
+
+[tool.flake8]
+max-line-length = 100

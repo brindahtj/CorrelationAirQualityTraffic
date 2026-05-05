@@ -1,0 +1,71 @@
+name: UrbanHub CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Étape 1 : Lint ────────────────────────────────────────────────────────
+  lint:
+    name: Lint (flake8 + black)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install lint tools
+        run: pip install flake8 black
+
+      - name: flake8 — erreurs de style
+        run: flake8 src/ tests/ --max-line-length=100
+
+      - name: black — formatage cohérent
+        run: black --check src/ tests/
+
+  # ── Étape 2 : Tests unitaires ─────────────────────────────────────────────
+  unit-tests:
+    name: Tests unitaires (pytest + coverage)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          pytest tests/ \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-fail-under=80 \
+            -v
+
+  # ── Étape 3 : Build (vérification du package) ─────────────────────────────
+  build:
+    name: Build check
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build package
+        run: python -m build --wheel
