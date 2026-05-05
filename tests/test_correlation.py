@@ -1,4 +1,4 @@
-import py
+import pytest
 from correlation import pearson_correlation
 
 
