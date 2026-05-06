@@ -54,19 +54,107 @@ jobs:
 
   # ── Étape 3 : Build (vérification du package) ─────────────────────────────
   build:
-    name: Build check
+    name: "③ Build — exécutable binaire (PyInstaller)"
     runs-on: ubuntu-latest
     needs: unit-tests
     steps:
       - uses: actions/checkout@v4
-
+ 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-
-      - name: Install build tools
-        run: pip install build
-
-      - name: Build package
-        run: python -m build --wheel
+ 
+      - name: Install build dependencies
+        run: pip install pyinstaller
+ 
+      # PyInstaller produit un binaire standalone dans dist/
+      # --onefile    → un seul fichier exécutable (pas un dossier)
+      # --name       → nom du binaire final
+      # --distpath   → dossier de sortie
+      - name: Build executable with PyInstaller
+        run: |
+          PYTHONPATH=. pyinstaller src/cli.py \
+            --onefile \
+            --name urbanhub-correlation \
+            --distpath dist/ \
+            --workpath /tmp/pyinstaller-build \
+            --clean
+ 
+      - name: Vérifier que le binaire existe et est exécutable
+        run: |
+          ls -lh dist/urbanhub-correlation
+          test -x dist/urbanhub-correlation || (echo "ERREUR : binaire non exécutable" && exit 1)
+ 
+      # Upload du binaire comme artefact CI — téléchargeable depuis GitHub Actions
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: urbanhub-correlation-linux-x64
+          path: dist/urbanhub-correlation
+          retention-days: 30
+ 
+  # ══════════════════════════════════════════════════════════════════════════
+  # JOB 4 — SMOKE TEST DE L'EXÉCUTABLE
+  #
+  # On télécharge le binaire produit à l'étape précédente et on le lance
+  # avec des données réelles pour vérifier qu'il s'exécute correctement.
+  # C'est le "test du build" — sans ça, le binaire pourrait exister mais planter.
+  # ══════════════════════════════════════════════════════════════════════════
+  smoke-test:
+    name: "④ Smoke test — exécutable fonctionne"
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download executable
+        uses: actions/download-artifact@v4
+        with:
+          name: urbanhub-correlation-linux-x64
+          path: dist/
+ 
+      - name: Rendre le binaire exécutable
+        run: chmod +x dist/urbanhub-correlation
+ 
+      # Test 1 — cas nominal : zone critique connue
+      - name: "Smoke 1 — corrélation forte (zone Z-NORTH)"
+        run: |
+          dist/urbanhub-correlation \
+            --zone Z-NORTH \
+            --traffic 820,1540,2100,1980,1300 \
+            --no2 28,45,62,58,38 \
+            --output json | tee result.json || true
+ 
+          # Vérifier que le JSON contient les champs attendus
+          python3 -c "
+          import json, sys
+          r = json.load(open('result.json'))
+          assert 'correlationScore' in r, 'champ correlationScore manquant'
+          assert -1 <= r['correlationScore'] <= 1, f'score hors bornes: {r[\"correlationScore\"]}'
+          assert r['zone'] == 'Z-NORTH', f'zone incorrecte: {r[\"zone\"]}'
+          assert r['severity'] in ('OK','MEDIUM','HIGH','CRITICAL'), f'severity invalide: {r[\"severity\"]}'
+          print(f'OK — r={r[\"correlationScore\"]}, severity={r[\"severity\"]}')
+          "
+ 
+      # Test 2 — données avec nulls : ne doit pas planter
+      - name: "Smoke 2 — données nulles (bug fix validé sur binaire)"
+        run: |
+          dist/urbanhub-correlation \
+            --zone Z-SOUTH \
+            --traffic "820,null,2100,1980,null" \
+            --no2 "28,null,62,58,null" \
+            --output json | tee result_null.json || true
+ 
+          python3 -c "
+          import json
+          r = json.load(open('result_null.json'))
+          assert r['nullIgnored'] > 0, 'nulls non détectés'
+          assert r['validPairs'] < 5, 'toutes les paires marquées valides à tort'
+          print(f'OK — {r[\"nullIgnored\"]} null(s) ignoré(s), {r[\"validPairs\"]} paires valides')
+          "
+ 
+      # Test 3 — version flag
+      - name: "Smoke 3 — --version retourne un numéro"
+        run: |
+          VERSION=$(dist/urbanhub-correlation --version 2>&1)
+          echo "Version détectée : $VERSION"
+          echo "$VERSION" | grep -E "[0-9]+\.[0-9]+\.[0-9]+" || (echo "ERREUR : format de version invalide" && exit 1)
