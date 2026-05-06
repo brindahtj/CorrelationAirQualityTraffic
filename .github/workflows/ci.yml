@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install lint tools
-        run: pip install flake8 black
+        run: pip install flake8 black=24.8.0
 
       - name: flake8 — erreurs de style
         run: flake8 src/ tests/ --max-line-length=100
