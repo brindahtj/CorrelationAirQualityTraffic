@@ -14,7 +14,7 @@ def _filter_valid_pairs(
 
 # ── fonction principale ───────────────────────────────────────────────────────
 
-#Fonction green avant refactor
+# Fonction green avant refactor
 # def pearson_correlation(
 #     trafic: list[Optional[float]],
 #     no2: list[Optional[float]],
