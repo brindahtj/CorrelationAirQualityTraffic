@@ -39,6 +39,7 @@ def _filter_valid_pairs(
 #
 #     return round(numerator / denominator, 2)
 
+
 def pearson_correlation(
     trafic: list[Optional[float]],
     no2: list[Optional[float]],
