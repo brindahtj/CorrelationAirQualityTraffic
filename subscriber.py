@@ -4,7 +4,7 @@ import signal
 import sys
 import json
 import pika
-from MoteurCorrelation.src.correlation import pearson_correlation
+from src.correlation import pearson_correlation
 
 RABBIT_HOST = os.getenv("RABBIT_HOST", "localhost")
 RABBIT_PORT = int(os.getenv("RABBIT_PORT", "5672"))
