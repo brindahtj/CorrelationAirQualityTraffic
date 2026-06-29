@@ -9,13 +9,15 @@ from src.correlation import pearson_correlation
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-RABBIT_HOST = os.getenv("RABBIT_HOST", "localhost")
-RABBIT_PORT = int(os.getenv("RABBIT_PORT", "5672"))
-RABBIT_USER = os.getenv("RABBIT_USER", "guest")
-RABBIT_PASS = os.getenv("RABBIT_PASS", "guest")
-RABBIT_VHOST = os.getenv("RABBIT_VHOST", "/")
-EXCHANGE = os.getenv("RABBIT_EXCHANGE", "logs")
-
+from Api_ingestion.config import (
+    EXCHANGE,
+    RABBIT_QUEUE,
+    RABBIT_HOST,
+    RABBIT_PASS,
+    RABBIT_PORT,
+    RABBIT_USER,
+    RABBIT_VHOST,
+)
 stop_consuming = False
 pollution_buffer = []
 traffic_buffer = []
