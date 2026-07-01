@@ -7,9 +7,8 @@ Respecte SRP : orchestre les composants.
 
 import json
 import logging
-from typing import Optional
 
-from Api_ingestion.exceptions import ConsumerError
+from Archive.Api_ingestion.exceptions import ConsumerError
 from correlation_service import CorrelationService
 from message_buffer import MessageBuffer
 from rabbit_consumer import RabbitConsumer

@@ -6,7 +6,7 @@ Respecte SRP : responsabilité unique = gérer un buffer.
 
 from typing import List, Dict, Any
 
-from Api_ingestion.exceptions import BufferError
+from Archive.Api_ingestion.exceptions import BufferError
 
 
 class MessageBuffer:

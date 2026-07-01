@@ -5,13 +5,9 @@ Respecte SRP : responsabilité unique = calculer la corrélation.
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-from Api_ingestion.constants import (
-    MIN_CORRELATION_PAIRS,
-    ROUTING_KEY_POLLUTION,
-)
-from Api_ingestion.exceptions import CorrelationError
+from Archive.Api_ingestion.exceptions import CorrelationError
 from correlation import pearson_correlation
 
 log = logging.getLogger(__name__)

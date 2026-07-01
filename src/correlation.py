@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from Api_ingestion.constants import CORRELATION_PRECISION, MIN_CORRELATION_PAIRS
+from Archive.Api_ingestion.constants import CORRELATION_PRECISION, MIN_CORRELATION_PAIRS
 
 
 def _filter_valid_pairs(

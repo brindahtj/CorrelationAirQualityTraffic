@@ -9,7 +9,7 @@ from typing import Callable
 
 import pika
 
-from Api_ingestion.config import (
+from Archive.Api_ingestion.config import (
     EXCHANGE,
     RABBIT_HOST,
     RABBIT_PASS,
@@ -17,8 +17,8 @@ from Api_ingestion.config import (
     RABBIT_USER,
     RABBIT_VHOST,
 )
-from Api_ingestion.constants import ROUTING_KEY_POLLUTION, ROUTING_KEY_TRAFFIC
-from Api_ingestion.exceptions import ConsumerError
+from Archive.Api_ingestion.constants import ROUTING_KEY_POLLUTION, ROUTING_KEY_TRAFFIC
+from Archive.Api_ingestion.exceptions import ConsumerError
 
 log = logging.getLogger(__name__)
 
